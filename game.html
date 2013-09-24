@@ -9,17 +9,17 @@
 <script src="palette.js"></script>
 
 <script>
-  function uni(r,g,b) {
-      var side = function(r,g,b,off) {
-        if (typeof off == 'undefined') { off = 0 }
-        r -= off;
-        g -= off;
-        b -= off;
-        return [r,g,b,1,
-                r,g,b,1,
-                r,g,b,1,
-                r,g,b,1];
-      }
+function uni(r,g,b) {
+    var side = function(r,g,b,off) {
+    if (typeof off == 'undefined') { off = 0 }
+    r -= off;
+    g -= off;
+    b -= off;
+    return [r,g,b,1,
+            r,g,b,1,
+            r,g,b,1,
+            r,g,b,1];
+  }
 
     return [].concat(
         side(r,g,b,0.1), //front
@@ -29,55 +29,63 @@
         side(r,g,b,0.2), //right
         side(r,g,b) //left
     );
-  };
+};
 
-  var cube = new PhiloGL.O3D.Model({
-    vertices: [0, 0,  1,
-                1, 0,  1,
-                1,  1,  1,
-               0,  1,  1,
 
-               0, 0, 0,
-               0,  1, 0,
-                1,  1, 0,
-                1, 0, 0,
+cubeAttrs = {
+vertices: [0, 0,  1,
+            1, 0,  1,
+            1,  1,  1,
+           0,  1,  1,
 
-               0,  1, 0,
-               0,  1,  1,
-                1,  1,  1,
-                1,  1, 0,
+           0, 0, 0,
+           0,  1, 0,
+            1,  1, 0,
+            1, 0, 0,
 
-               0, 0, 0,
-                1, 0, 0,
-                1, 0,  1,
-               0, 0,  1,
+           0,  1, 0,
+           0,  1,  1,
+            1,  1,  1,
+            1,  1, 0,
 
-                1, 0, 0,
-                1,  1, 0,
-                1,  1,  1,
-                1, 0,  1,
+           0, 0, 0,
+            1, 0, 0,
+            1, 0,  1,
+           0, 0,  1,
 
-               0, 0, 0,
-               0, 0,  1,
-               0,  1,  1,
-               0,  1, 0],
+            1, 0, 0,
+            1,  1, 0,
+            1,  1,  1,
+            1, 0,  1,
 
-    colors: uni(1,1,1),
+           0, 0, 0,
+           0, 0,  1,
+           0,  1,  1,
+           0,  1, 0],
 
-    indices: [0, 1, 2, 0, 2, 3,
-              4, 5, 6, 4, 6, 7,
-              8, 9, 10, 8, 10, 11,
-              12, 13, 14, 12, 14, 15,
-              16, 17, 18, 16, 18, 19,
-              20, 21, 22, 20, 22, 23]
-  });
+colors: uni(1,1,1),
 
-  cube.position.set(1.5, 0, -8);
+indices: [0, 1, 2, 0, 2, 3,
+          4, 5, 6, 4, 6, 7,
+          8, 9, 10, 8, 10, 11,
+          12, 13, 14, 12, 14, 15,
+          16, 17, 18, 16, 18, 19,
+          20, 21, 22, 20, 22, 23]
+};
 
-  var highlight = 0;
-  var highlightIncrement = 0.003;
 
-  function colorCube() {
+var Box = function() { PhiloGL.O3D.Model.call(this, cubeAttrs); }
+
+Box.prototype = Object.create(PhiloGL.O3D.Model.prototype, {
+
+})
+
+var cube = new Box();
+
+var highlight = 0;
+var highlightIncrement = 0.003;
+
+function colorCube() {
     if ((highlight > 0.05) || (highlight < -0.05)) {
         highlightIncrement *= -1;
     }
@@ -88,82 +96,84 @@
         c[1]/255+highlight, 
         c[2]/255+highlight
     );
-  }
+}
 
-  function webGLStart() {
-      PhiloGL('lesson04-canvas', {
-          program: {
-              from: 'ids',
-              vs: 'shader-vs',
-              fs: 'shader-fs'
-          },
-          onError: function () {
-              alert("An error ocurred while loading the application");
-          },
-          onLoad: function (app) {
-              var gl = app.gl,
-                  canvas = app.canvas,
-                  program = app.program,
-                  camera = app.camera,
-                  view = new PhiloGL.Mat4,
-                  rCube = 0;
+function webGLStart() {
+    PhiloGL('lesson04-canvas', {
+      program: {
+          from: 'ids',
+          vs: 'shader-vs',
+          fs: 'shader-fs'
+      },
+      onError: function () {
+          alert("An error ocurred while loading the application");
+      },
+      onLoad: function (app) {
+          var gl = app.gl,
+              canvas = app.canvas,
+              program = app.program,
+              camera = app.camera,
+              view = new PhiloGL.Mat4,
+              rCube = 0;
 
-              gl.viewport(0, 0, canvas.width, canvas.height);
-              gl.clearColor(0, 0, 0, 1);
-              gl.clearDepth(1);
-              gl.enable(gl.DEPTH_TEST);
-              gl.depthFunc(gl.LEQUAL);
+          gl.viewport(0, 0, canvas.width, canvas.height);
+          gl.clearColor(0, 0, 0, 1);
+          gl.clearDepth(1);
+          gl.enable(gl.DEPTH_TEST);
+          gl.depthFunc(gl.LEQUAL);
 
-              camera.view.id();
+          camera.view.id();
 
-              function setupElement(elem) {
-                  //update element matrix
-                  elem.update();
-                  //get new view matrix out of element and camera matrices
-                  view.mulMat42(camera.view, elem.matrix);
-                  //set buffers with element data
-                  program.setBuffers({
-                      'aVertexPosition': {
-                          value: elem.vertices,
-                          size: 3
-                      },
-                      'aVertexColor': {
-                          value: elem.colors,
-                          size: 4
-                      },
-                  });
-                  //set uniforms
-                  program.setUniform('uMVMatrix', view);
-                  program.setUniform('uPMatrix', camera.projection);
+          cube.position.set(1.5, 0, -8);
 
-              }
+          function setupElement(elem) {
+              //update element matrix
+              elem.update();
+              //get new view matrix out of element and camera matrices
+              view.mulMat42(camera.view, elem.matrix);
+              //set buffers with element data
+              program.setBuffers({
+                  'aVertexPosition': {
+                      value: elem.vertices,
+                      size: 3
+                  },
+                  'aVertexColor': {
+                      value: elem.colors,
+                      size: 4
+                  },
+              });
+              //set uniforms
+              program.setUniform('uMVMatrix', view);
+              program.setUniform('uPMatrix', camera.projection);
 
-              function tick() {
-                  drawScene();
-                  PhiloGL.Fx.requestAnimationFrame(tick);
-              }
-
-              function drawScene() {
-                  gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-
-                  //Draw Cube
-                  setupElement(cube);
-
-                  colorCube();
-
-                  program.setBuffer('indices', {
-                      value: cube.indices,
-                      bufferType: gl.ELEMENT_ARRAY_BUFFER,
-                      size: 1
-                  });
-                  gl.drawElements(gl.TRIANGLES, cube.indices.length, gl.UNSIGNED_SHORT, 0);
-              }
-
-              tick();
           }
-      });
 
-  }
+          function tick() {
+              drawScene();
+              PhiloGL.Fx.requestAnimationFrame(tick);
+          }
+
+          function drawScene() {
+              gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+              //Draw Cube
+              setupElement(cube);
+
+              colorCube();
+
+              program.setBuffer('indices', {
+                  value: cube.indices,
+                  bufferType: gl.ELEMENT_ARRAY_BUFFER,
+                  size: 1
+              });
+              gl.drawElements(gl.TRIANGLES, cube.indices.length, gl.UNSIGNED_SHORT, 0);
+          }
+
+          tick();
+      }
+    });
+
+}
 
 </script>
 
@@ -238,7 +248,7 @@
 
     modes = {
         move: {
-            help: 'move and then hit space',
+            help: 'use arrow keys to move',
             next: 'color',
             key: 'm',
         },
