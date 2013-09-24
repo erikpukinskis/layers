@@ -80,8 +80,15 @@ Box.prototype = Object.create(PhiloGL.O3D.Model.prototype, {
 
 })
 
-var cube = new Box();
+var World = function() {
+    this.objects = [];
+}
 
+var world = new World();
+world.objects.push(new Box(), new Box());
+world.selected = world.objects[0];
+
+var selected = 0;
 var highlight = 0;
 var highlightIncrement = 0.003;
 
@@ -91,7 +98,8 @@ function colorCube() {
     }
     highlight += highlightIncrement;
     var c = hslToRgb(hsl(color[0],color[1]));
-    cube.colors = uni(
+
+    world.selected.colors = uni(
         c[0]/255+highlight, 
         c[1]/255+highlight, 
         c[2]/255+highlight
@@ -124,7 +132,8 @@ function webGLStart() {
 
           camera.view.id();
 
-          cube.position.set(1.5, 0, -8);
+          world.objects[0].position.set(1.5, 0, -8);
+          world.objects[1].position.set(0, 0, -8);
 
           function setupElement(elem) {
               //update element matrix
@@ -153,21 +162,24 @@ function webGLStart() {
               PhiloGL.Fx.requestAnimationFrame(tick);
           }
 
-          function drawScene() {
-              gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+            function drawScene() {
+                gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-              //Draw Cube
-              setupElement(cube);
+                //Draw Cube
+                for(var i=0; i<2; i++) {
+                    setupElement(world.objects[i]);
 
-              colorCube();
+                    colorCube();
 
-              program.setBuffer('indices', {
-                  value: cube.indices,
-                  bufferType: gl.ELEMENT_ARRAY_BUFFER,
-                  size: 1
-              });
-              gl.drawElements(gl.TRIANGLES, cube.indices.length, gl.UNSIGNED_SHORT, 0);
-          }
+                    program.setBuffer('indices', {
+                        value: world.objects[i].indices,
+                        bufferType: gl.ELEMENT_ARRAY_BUFFER,
+                        size: 1
+                    });
+
+                    gl.drawElements(gl.TRIANGLES, world.objects[i].indices.length, gl.UNSIGNED_SHORT, 0);
+                }
+            }
 
           tick();
       }
@@ -215,7 +227,7 @@ function webGLStart() {
 </body>
 
 <script>
-    var mode = 'select';
+    var mode = 'move';
 
     document.onkeydown = function (e) {
         if (e.keyCode == k[modes[mode].key]) {
@@ -278,9 +290,9 @@ function webGLStart() {
     }
     modes.move.onkeydown = function(e) {
         offset = arrowKeyOffset(e);
-        cube.position.x += offset.x;
-        cube.position.y += offset.y;
-        cube.position.z += offset.z;        
+        world.objects[0].position.x += offset.x;
+        world.objects[0].position.y += offset.y;
+        world.objects[0].position.z += offset.z;        
     }
 
     function bounded(val,min,max) {
