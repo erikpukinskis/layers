@@ -8,6 +8,11 @@ var Box = function(options) {
 
 Box.prototype = Object.create(PhiloGL.O3D.Model.prototype, {});
 
+Box.prototype.setColorSeed = function(seed) {
+  this.colorSeed = seed;
+  this.applyColorSeed();
+}
+
 Box.prototype.applyColorSeed = function() {
   var c = hslToRgb(hsl.apply(this, this.colorSeed));
 

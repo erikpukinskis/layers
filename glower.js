@@ -1,16 +1,11 @@
 var Glower = function(object) {
   this.object = object;
-  this.intensity = 0;
-  this.increment = 0.003;
+  this.lastGlow = new Date();
 }
 
 Glower.prototype.glow = function() {
-    if ((this.intensity > 0.05) || (this.intensity < -0.05)) {
-        this.increment *= -1;
-    }
-    this.intensity += this.increment;
-
-    this.object.setGamma(this.intensity);
+  var intensity = Math.sin((new Date() - this.lastGlow) / 1000 * 6) / 6;
+  this.object.setGamma(intensity);
 }
 
 Glower.prototype.target = function(object) {
