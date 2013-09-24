@@ -17,6 +17,10 @@ var MongoRest = require('mongo-rest')
 
 mongoose.connect('localhost', 'layers-development');
 
+app.get('/', function (req, res) {
+  res.redirect('game.html');
+});
+
 var port = process.env.PORT || 5000;
 
 app.listen(port, function() {
