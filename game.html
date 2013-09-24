@@ -202,13 +202,14 @@ function webGLStart() {
     setMode('move');
 
     document.onkeydown = function (e) {
-        if (e.keyCode == k[modes[mode].key]) {
+
+        if (e.keyCode == modes[mode].key.charCodeAt(0)) {
             mode = modes[mode].next;
             setHelp();
         }
 
         newMode = _.find(modes, function(attr,name) {
-            if(k[attr.key] == e.keyCode) {
+            if(attr.key.charCodeAt(0) == e.keyCode) {
                 if (f = attr.onload) { f() }
                 setMode(name);
             }
@@ -227,11 +228,6 @@ function webGLStart() {
         right: 39,
         down: 40,
         space: 32,
-        m: 77,
-        c: 67,
-        s: 83,
-        n: 78,
-        l: 'L'.charCodeAt(0),
     }
 
     k.directions = [k.up, k.right, k.down, k.left];
@@ -240,7 +236,7 @@ function webGLStart() {
         move: {
             help: 'use arrow keys to move',
             next: 'color',
-            key: 'm',
+            key: 'M',
             onkeydown: function(e, direction) {
                 world.selected.position.x += direction.x;
                 world.selected.position.y += direction.y;
@@ -250,7 +246,7 @@ function webGLStart() {
         color: {
             help: 'change colors with arrow keys',
             next: 'select',
-            key: 'c',
+            key: 'C',
             onkeydown: function(e, direction) {
               var seed = world.selected.colorSeed;
               world.selected.setColorSeed ([
@@ -267,7 +263,7 @@ function webGLStart() {
         select: {
             help: 'select',
             next: 'move',
-            key: 'l',
+            key: 'L',
             onkeydown: function(e, direction) {
               if (!_.contains(k.directions, e.keyCode)) { return }
               var newPosition = world.selected.position.clone();
@@ -293,8 +289,6 @@ function webGLStart() {
             }
         },
     };
-
-    var modeKeys = _.map(modes, function(mode) { return k[mode.key] });
 
     function arrowKeyDirection(e) {
         var direction = {x:0, y:0, z:0};
