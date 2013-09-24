@@ -74,6 +74,21 @@
 
   cube.position.set(1.5, 0, -8);
 
+  var highlight = 0;
+  var highlightIncrement = 0.003;
+
+  function colorCube() {
+    if ((highlight > 0.05) || (highlight < -0.05)) {
+        highlightIncrement *= -1;
+    }
+    highlight += highlightIncrement;
+    var c = hslToRgb(hsl(color[0],color[1]));
+    cube.colors = uni(
+        c[0]/255+highlight, 
+        c[1]/255+highlight, 
+        c[2]/255+highlight
+    );
+  }
 
   function webGLStart() {
       PhiloGL('lesson04-canvas', {
@@ -115,18 +130,16 @@
                       'aVertexColor': {
                           value: elem.colors,
                           size: 4
-                      }
+                      },
                   });
                   //set uniforms
                   program.setUniform('uMVMatrix', view);
                   program.setUniform('uPMatrix', camera.projection);
-              }
 
-              function animate() {}
+              }
 
               function tick() {
                   drawScene();
-                  animate();
                   PhiloGL.Fx.requestAnimationFrame(tick);
               }
 
@@ -134,8 +147,10 @@
                   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
                   //Draw Cube
-                  cube.rotation.set(rCube, rCube, rCube);
                   setupElement(cube);
+
+                  colorCube();
+
                   program.setBuffer('indices', {
                       value: cube.indices,
                       bufferType: gl.ELEMENT_ARRAY_BUFFER,
@@ -190,39 +205,56 @@
 </body>
 
 <script>
-    var mode = 'color';
+    var mode = 'select';
 
     document.onkeydown = function (e) {
-        k = {
-            left: 37,
-            up: 38,
-            right: 39,
-            down: 40,
-            space: 32,
-        }
-
-        if (e.keyCode == k.space) {
+        if (e.keyCode == k[modes[mode].key]) {
             mode = modes[mode].next;
             setHelp();
         }
 
+        newMode = _.find(modes, function(attr,name) {
+            if(k[attr.key] == e.keyCode) {
+                return mode = name;
+            }
+        })
+
+        if (newMode) { return setHelp() }
+
         if (f = modes[mode].onkeydown) { f(e) }
+    }
+
+    k = {
+        left: 37,
+        up: 38,
+        right: 39,
+        down: 40,
+        space: 32,
+        m: 77,
+        c: 67,
+        s: 83,
+        n: 78,
     }
 
     modes = {
         move: {
             help: 'move and then hit space',
             next: 'color',
+            key: 'm',
         },
         color: {
             help: 'change colors with arrow keys',
-            next: 'select'
+            next: 'select',
+            key: 'c',
         },
         select: {
             help: 'select',
             next: 'move',
+            key: 's',
         },
     };
+
+    var modeKeys = _.map(modes, function(mode) { return k[mode.key] });
 
     function arrowKeyOffset(e) {
         var offset = {x:0, y:0, z:0};
@@ -250,9 +282,6 @@
         offset = arrowKeyOffset(e);
         color[0] = bounded(color[0]+offset.x, 0, width);
         color[1] = bounded(color[1]+offset.y, 0, height);
-
-        var c = hslToRgb(hsl(color[0],color[1]));
-        cube.colors = uni(c[0]/255, c[1]/255, c[2]/255);
     }
 
     function setHelp() {
