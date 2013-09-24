@@ -19,29 +19,42 @@ var rand = function(max) {
 
 var World = function() {
     this.objects = [];
+}
 
-    this.select = function(object) {
-      this.selected = object;
-      glower.target(object);
-    }
+World.prototype.select = function(object) {
+  this.selected = object;
+  glower.target(object);
+}
 
-    this.at = function(position) {
-      return _.find(this.objects, function(object) {
-        return object.position.distTo(position) == 0;
-      });
-    }
+World.prototype.at = function(position) {
+  return _.find(this.objects, function(object) {
+    return object.position.distTo(position) == 0;
+  });
+}
+
+World.prototype.clearGhost = function() {
+  if (!world.ghost) { return }
+  var i = world.objects.indexOf(world.ghost)
+  world.objects.splice(i, 1);
+  world.ghost = null;
 }
 
 var world = new World();
 
-var addABox = function() {
+var randomBox = function() {
   var box = new Box();
   box.setColorSeed([rand(20),11]);
   box.position.set(rand(6)-3, rand(6)-3, -8);
+  return box;
+}
+
+var addABox = function() {
+  box = randomBox();
 //  box.position.y = 0;
   if (!world.at(box.position)) {
     world.objects.push(box);  
   }
+  return box;
 }
 
 _.times(20, addABox);
@@ -223,6 +236,7 @@ function webGLStart() {
             next: 'select',
             key: 'c',
             onkeydown: function(e, direction) {
+              world.ghost = null;
               var seed = world.selected.colorSeed;
               world.selected.setColorSeed ([
                 bounded(seed[0]+direction.x, 0, width),
@@ -243,6 +257,18 @@ function webGLStart() {
 
               if (newObject = world.at(newPosition)) {
                 world.select(newObject);
+                world.clearGhost();
+              } else if (world.ghost) {
+                world.ghost.position = newPosition;
+              } else {
+                setHelp('Press c to place object');
+                newObject = randomBox();
+                newObject.position = newPosition;
+                newObject.setColorSeed([0,20]);
+                world.objects.push(newObject);
+                world.ghost = newObject;
+                world.select(newObject);
+
               }
             }
         },
@@ -267,8 +293,8 @@ function webGLStart() {
 
     var color = [12,10];
 
-    function setHelp() {
-        document.getElementById('message').innerHTML = modes[mode].help;        
+    function setHelp(message) {
+        document.getElementById('message').innerHTML = message || modes[mode].help;        
     }
 
     setHelp();
