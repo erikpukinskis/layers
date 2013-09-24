@@ -80,8 +80,27 @@ Box.prototype = Object.create(PhiloGL.O3D.Model.prototype, {
 
 })
 
+Math.identity = function(val) { return val }
+
 var World = function() {
     this.objects = [];
+
+    this.neighbor = function(position, direction) {
+        _world = this;
+        return _.reduce(this.objects, function(best, object) {
+            if (object == _world.selected) { return best }
+            if (!best) { return object }
+            var dx = Math.identity(object.position.x - position.x);
+            var dy = Math.abs(object.position.y - position.y);
+
+            if ((dx > 0) && (dx <= dy)) {
+                object.score = dx + dy;
+                return (object.score > best.score) ? object : best;
+            } else {
+                return best;
+            }
+        }, null);
+    }
 }
 
 var world = new World();
@@ -132,7 +151,7 @@ function webGLStart() {
 
           camera.view.id();
 
-          world.objects[0].position.set(1.5, 0, -8);
+          world.objects[0].position.set(1, 0, -8);
           world.objects[1].position.set(0, 0, -8);
 
           function setupElement(elem) {
@@ -243,7 +262,9 @@ function webGLStart() {
 
         if (newMode) { return setHelp() }
 
-        if (f = modes[mode].onkeydown) { f(e) }
+        if (f = modes[mode].onkeydown) { 
+            f(e, arrowKeyDirection(e));
+        }
     }
 
     k = {
@@ -263,36 +284,42 @@ function webGLStart() {
             help: 'use arrow keys to move',
             next: 'color',
             key: 'm',
+            onkeydown: function(e, direction) {
+                world.selected.position.x += direction.x;
+                world.selected.position.y += direction.y;
+                world.selected.position.z += direction.z;        
+            },
         },
         color: {
             help: 'change colors with arrow keys',
             next: 'select',
             key: 'c',
+            onkeydown: function(e, direction) {
+                color[0] = bounded(color[0]+direction.x, 0, width);
+                color[1] = bounded(color[1]+direction.y, 0, height);
+            },
         },
         select: {
             help: 'select',
             next: 'move',
             key: 's',
+            onkeydown: function(e, direction) {
+                world.selected = world.neighbor(direction);
+            }
         },
     };
 
     var modeKeys = _.map(modes, function(mode) { return k[mode.key] });
 
-    function arrowKeyOffset(e) {
-        var offset = {x:0, y:0, z:0};
+    function arrowKeyDirection(e) {
+        var direction = {x:0, y:0, z:0};
         switch(e.keyCode) {
-            case k.up: offset.y = 1; break;
-            case k.right: offset.x = 1; break;
-            case k.down: offset.y = -1; break;
-            case k.left: offset.x = -1; break;
+            case k.up: direction.y = 1; break;
+            case k.right: direction.x = 1; break;
+            case k.down: direction.y = -1; break;
+            case k.left: direction.x = -1; break;
         }
-        return offset;        
-    }
-    modes.move.onkeydown = function(e) {
-        offset = arrowKeyOffset(e);
-        world.objects[0].position.x += offset.x;
-        world.objects[0].position.y += offset.y;
-        world.objects[0].position.z += offset.z;        
+        return direction;        
     }
 
     function bounded(val,min,max) {
@@ -300,11 +327,6 @@ function webGLStart() {
     }
 
     var color = [12,10];
-    modes.color.onkeydown = function(e) {
-        offset = arrowKeyOffset(e);
-        color[0] = bounded(color[0]+offset.x, 0, width);
-        color[1] = bounded(color[1]+offset.y, 0, height);
-    }
 
     function setHelp() {
         document.getElementById('message').innerHTML = modes[mode].help;        
