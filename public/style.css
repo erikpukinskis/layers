@@ -38,3 +38,10 @@ ul#help li {
   text-transform: uppercase;
   display: inline-block;
 }
+
+code {
+  background-color: white;
+  padding: 4px 8px;
+  font-size: 1.2em;
+  color: #99a;
+}

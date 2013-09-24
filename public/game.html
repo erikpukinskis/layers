@@ -44,8 +44,7 @@ world.objects[3].position.x = 1*/
 
 addABox();
 
-world.selected = world.objects[0];
-var glower = new Glower(world.selected);
+world.select(world.objects[0]);
 
 </script>
 
@@ -88,7 +87,10 @@ var glower = new Glower(world.selected);
     <li id="color"><span>c</span> Change color</li>
     <li id="move"><span>m</span> Move</li>
     <li id="select"><span>l</span> Select</li>
+    <li id="select"><span>s</span> Save</li>    
+    <li>To load, type <code>load('your label')</code> in the javascript console</li>
   </ul>
+
 </body>
 
 <script src="ui.js"></script>

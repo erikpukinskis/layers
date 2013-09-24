@@ -58,7 +58,7 @@ function webGLStart() {
                 for(var i=0; i<world.objects.length; i++) {
                     setupElement(world.objects[i]);
 
-                    glower.glow();
+                    world.glower.glow();
 
                     program.setBuffer('indices', {
                         value: world.objects[i].indices,

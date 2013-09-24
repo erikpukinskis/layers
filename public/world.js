@@ -4,7 +4,11 @@ var World = function() {
 
 World.prototype.select = function(object) {
   this.selected = object;
-  glower.target(object);
+  if (this.glower) { 
+    this.glower.target(object);
+  } else {
+    this.glower = new Glower(object);
+  }
 }
 
 World.prototype.at = function(position) {

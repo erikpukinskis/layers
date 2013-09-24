@@ -1,0 +1,17 @@
+{
+  "name": "layers",
+  "version": "0.0.1",
+  "dependencies": {
+    "express":    "*",
+    "jade":       "*",
+    "mongoose":   "*",
+    "mongo-rest": "git://github.com/enyo/mongo-rest.git",
+    "ejs":        "*",
+    "underscore": "*",
+    "underscore.string": "*"
+  },
+  "engines": {
+    "node": "0.8.x",
+    "npm":  "1.1.x"
+  }
+}
