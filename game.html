@@ -201,6 +201,30 @@ function webGLStart() {
 
     setMode('move');
 
+    function save(label) {
+      var data = _.map(world.objects, function(object) {
+        return {
+          x: object.position.x, 
+          y: object.position.y,
+          colorSeed: object.colorSeed,
+        }
+      });
+
+      window.localStorage.setItem(label, JSON.stringify(data));
+    }
+
+    function load(label) {
+      world.objects = [];
+      world.ghost = null;
+      _.each(JSON.parse(window.localStorage.getItem(label)), function(hash) {
+        var box = new Box();
+        box.position.set(hash.x, hash.y, -8);
+        box.setColorSeed(hash.colorSeed);
+        world.objects.push(box);
+      });
+      world.select(world.objects[0]);
+    }
+
     document.onkeydown = function (e) {
 
         if (e.keyCode == modes[mode].key.charCodeAt(0)) {
@@ -219,6 +243,11 @@ function webGLStart() {
 
         if (f = modes[mode].onkeydown) { 
             f(e, arrowKeyDirection(e));
+        }
+
+        if (e.keyCode == 'S'.charCodeAt(0)) {
+          var label = prompt('enter a label');
+          save(label);
         }
     }
 
