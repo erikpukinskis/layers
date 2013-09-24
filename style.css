@@ -5,3 +5,35 @@
     color: white;
     font-size: 30px;
 }
+
+ul#help {
+  list-style-type: none;
+  margin: 0.5em 0 0 0;
+  padding: 0;
+}
+
+ul#help li {
+  font-family: sans-serif;
+  color: #544;
+  display: inline-block;
+  background: #eef;
+  border-radius: 7px;
+  padding: 8px 8px 7px 8px;
+  margin-right: 0.3em;
+  text-transform: lowercase;
+}
+
+#help li span {
+  border: 1px solid #ccd;
+  border-bottom-width: 4px;
+  width: 30px;
+  height: 13px;
+  font-size: 12px;
+  line-height: 0;
+  border-radius: 5px;
+  padding-top: 15px;
+  vertical-align: 1px;
+  text-align: center;
+  text-transform: uppercase;
+  display: inline-block;
+}
