@@ -185,14 +185,21 @@ function webGLStart() {
   <div id="message"></div>
   <canvas id="lesson04-canvas" style="border: none;" width="500" height="500"></canvas>
   <ul id="help">
-    <li><span>c</span> Change color</li>
-    <li><span>m</span> Move</li>
-    <li><span>s</span> Select</li>
+    <li id="color"><span>c</span> Change color</li>
+    <li id="move"><span>m</span> Move</li>
+    <li id="select"><span>s</span> Select</li>
   </ul>
 </body>
 
 <script>
-    var mode = 'move';
+    var mode;
+    function setMode(name) {
+      if (el = document.getElementById(mode)) el.style.border = "3px solid white";
+      document.getElementById(name).style.border = "3px solid #ddd"
+      return mode = name;      
+    }
+
+    setMode('move');
 
     document.onkeydown = function (e) {
         if (e.keyCode == k[modes[mode].key]) {
@@ -203,7 +210,7 @@ function webGLStart() {
         newMode = _.find(modes, function(attr,name) {
             if(k[attr.key] == e.keyCode) {
                 if (f = attr.onload) { f() }
-                return mode = name;
+                setMode(name);
             }
         })
 
