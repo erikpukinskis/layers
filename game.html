@@ -8,10 +8,14 @@
 <script src="underscore.js"></script>
 <script src="palette.js"></script>
 <script src="box.js"></script>
+<script src="glower.js"></script>
 
 <script>
 
 Math.identity = function(val) { return val }
+var rand = function(max) {
+  return parseInt(Math.random()*max);
+}
 
 var World = function() {
     this.objects = [];
@@ -35,21 +39,19 @@ var World = function() {
 }
 
 var world = new World();
-world.objects.push(new Box(), new Box());
-world.selected = world.objects[0];
 
-var selected = 0;
-var highlight = 0;
-var highlightIncrement = 0.003;
-
-function colorCube() {
-    if ((highlight > 0.05) || (highlight < -0.05)) {
-        highlightIncrement *= -1;
-    }
-    highlight += highlightIncrement;
-
-    world.selected.setGamma(highlight);
+var addABox = function() {
+  var box = new Box();
+  box.colorSeed = [rand(20),11];
+  box.applyColorSeed();
+  box.position.set(rand(6)-3, rand(6)-3, -8);
+  world.objects.push(box);  
 }
+
+_.times(4, addABox);
+
+world.selected = world.objects[0];
+var glower = new Glower(world.selected);
 
 function webGLStart() {
     PhiloGL('lesson04-canvas', {
@@ -76,9 +78,6 @@ function webGLStart() {
           gl.depthFunc(gl.LEQUAL);
 
           camera.view.id();
-
-          world.objects[0].position.set(1, 0, -8);
-          world.objects[1].position.set(0, 0, -8);
 
           function setupElement(elem) {
               //update element matrix
@@ -111,10 +110,10 @@ function webGLStart() {
                 gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
                 //Draw Cube
-                for(var i=0; i<2; i++) {
+                for(var i=0; i<world.objects.length; i++) {
                     setupElement(world.objects[i]);
 
-                    colorCube();
+                    glower.glow();
 
                     program.setBuffer('indices', {
                         value: world.objects[i].indices,
