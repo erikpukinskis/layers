@@ -4,8 +4,33 @@
 <title>Learning WebGL &mdash; lesson 4</title>
 <meta http-equiv="content-type" content="text/html; charset=ISO-8859-1">
 
-<script type="text/javascript" src="http://www.senchalabs.org/philogl/PhiloGL/build/PhiloGL.js"></script>
+<script src="http://www.senchalabs.org/philogl/PhiloGL/build/PhiloGL.js"></script>
+<script src="underscore.js"></script>
+<script src="palette.js"></script>
+
 <script>
+  function uni(r,g,b) {
+      var side = function(r,g,b,off) {
+        if (typeof off == 'undefined') { off = 0 }
+        r -= off;
+        g -= off;
+        b -= off;
+        return [r,g,b,1,
+                r,g,b,1,
+                r,g,b,1,
+                r,g,b,1];
+      }
+
+    return [].concat(
+        side(r,g,b,0.1), //front
+        side(r,g,b,0.1), //back
+        side(r,g,b,0.05), //top
+        side(r,g,b,0.05), //bottom
+        side(r,g,b,0.2), //right
+        side(r,g,b) //left
+    );
+  };
+
   var cube = new PhiloGL.O3D.Model({
     vertices: [0, 0,  1,
                 1, 0,  1,
@@ -37,35 +62,7 @@
                0,  1,  1,
                0,  1, 0],
 
-    colors: [1, 1, 1, 1, 
-             1, 1, 1, 1,
-             1, 1, 1, 1,
-             1, 1, 1, 1,
-
-             1, 1, 0, 1, 
-             1, 1, 0, 1, 
-             1, 1, 0, 1, 
-             1, 1, 0, 1, 
-
-             0, 1, 0, 1, 
-             0, 1, 0, 1, 
-             0, 1, 0, 1, 
-             0, 1, 0, 1, 
-
-             1, 0.5, 0.5, 1, 
-             1, 0.5, 0.5, 1, 
-             1, 0.5, 0.5, 1, 
-             1, 0.5, 0.5, 1, 
-
-             1, 0, 1, 1, 
-             1, 0, 1, 1, 
-             1, 0, 1, 1, 
-             1, 0, 1, 1, 
-             
-             0, 0, 1, 1,
-             0, 0, 1, 1,
-             0, 0, 1, 1,
-             0, 0, 1, 1],
+    colors: uni(1,1,1),
 
     indices: [0, 1, 2, 0, 2, 3,
               4, 5, 6, 4, 6, 7,
@@ -153,26 +150,6 @@
 
   }
 
-
-    document.onkeydown = function (e) {
-        k = {
-            left: 37,
-            up: 38,
-            right: 39,
-            down: 40,
-        }
-        var offset = {x:0, y:0, z:0};
-        switch(e.keyCode) {
-            case k.up: offset.y = 1; break;
-            case k.right: offset.x = 1; break;
-            case k.down: offset.y = -1; break;
-            case k.left: offset.x = -1; break;
-        }
-
-        cube.position.x += offset.x;
-        cube.position.y += offset.y;
-        cube.position.z += offset.z;
-    }
 </script>
 
 <script id="shader-fs" type="x-shader/x-fragment">
@@ -202,10 +179,88 @@
   }
 
 </script>
+
+<link rel="stylesheet" href="style.css" />
+
 </head>
 
 <body onload="webGLStart();" id="body">
+  <div id="message"></div>
   <canvas id="lesson04-canvas" style="border: none;" width="500" height="500"></canvas>
 </body>
+
+<script>
+    var mode = 'color';
+
+    document.onkeydown = function (e) {
+        k = {
+            left: 37,
+            up: 38,
+            right: 39,
+            down: 40,
+            space: 32,
+        }
+
+        if (e.keyCode == k.space) {
+            mode = modes[mode].next;
+            setHelp();
+        }
+
+        if (f = modes[mode].onkeydown) { f(e) }
+    }
+
+    modes = {
+        move: {
+            help: 'move and then hit space',
+            next: 'color',
+        },
+        color: {
+            help: 'change colors with arrow keys',
+            next: 'select'
+        },
+        select: {
+            help: 'select',
+            next: 'move',
+        },
+    };
+
+    function arrowKeyOffset(e) {
+        var offset = {x:0, y:0, z:0};
+        switch(e.keyCode) {
+            case k.up: offset.y = 1; break;
+            case k.right: offset.x = 1; break;
+            case k.down: offset.y = -1; break;
+            case k.left: offset.x = -1; break;
+        }
+        return offset;        
+    }
+    modes.move.onkeydown = function(e) {
+        offset = arrowKeyOffset(e);
+        cube.position.x += offset.x;
+        cube.position.y += offset.y;
+        cube.position.z += offset.z;        
+    }
+
+    function bounded(val,min,max) {
+        return Math.max(Math.min(val,max), min);
+    }
+
+    var color = [12,10];
+    modes.color.onkeydown = function(e) {
+        offset = arrowKeyOffset(e);
+        color[0] = bounded(color[0]+offset.x, 0, width);
+        color[1] = bounded(color[1]+offset.y, 0, height);
+
+        var c = hslToRgb(hsl(color[0],color[1]));
+        cube.colors = uni(c[0]/255, c[1]/255, c[2]/255);
+    }
+
+    function setHelp() {
+        document.getElementById('message').innerHTML = modes[mode].help;        
+    }
+
+    setHelp();
+
+</script>
 </html>
 
