@@ -74,11 +74,30 @@ indices: [0, 1, 2, 0, 2, 3,
 };
 
 
-var Box = function() { PhiloGL.O3D.Model.call(this, cubeAttrs); }
+var Box = function(options) { 
+  if (!options) { options = {} }
+  PhiloGL.O3D.Model.call(this, cubeAttrs); 
+  this.colorSeed = options.colorSeed || [10,10];
+  this.gamma = 0;
+  this.applyColorSeed();
+}
 
-Box.prototype = Object.create(PhiloGL.O3D.Model.prototype, {
+Box.prototype = Object.create(PhiloGL.O3D.Model.prototype, {});
 
-})
+Box.prototype.applyColorSeed = function() {
+  var c = hslToRgb(hsl.apply(this, this.colorSeed));
+
+  this.colors = uni(
+    c[0]/255+this.gamma,
+    c[1]/255+this.gamma,
+    c[2]/255+this.gamma
+  );
+}
+
+Box.prototype.setGamma = function(gamma) {
+  this.gamma = gamma;
+  this.applyColorSeed();
+}
 
 Math.identity = function(val) { return val }
 
@@ -116,13 +135,8 @@ function colorCube() {
         highlightIncrement *= -1;
     }
     highlight += highlightIncrement;
-    var c = hslToRgb(hsl(color[0],color[1]));
 
-    world.selected.colors = uni(
-        c[0]/255+highlight, 
-        c[1]/255+highlight, 
-        c[2]/255+highlight
-    );
+    world.selected.setGamma(highlight);
 }
 
 function webGLStart() {
@@ -295,8 +309,11 @@ function webGLStart() {
             next: 'select',
             key: 'c',
             onkeydown: function(e, direction) {
-                color[0] = bounded(color[0]+direction.x, 0, width);
-                color[1] = bounded(color[1]+direction.y, 0, height);
+              var seed = world.selected.colorSeed;
+              world.selected.colorSeed = [
+                bounded(seed[0]+direction.x, 0, width),
+                bounded(seed[1]+direction.y, 0, height),
+              ]
             },
         },
         select: {
