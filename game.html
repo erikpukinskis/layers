@@ -20,45 +20,15 @@ var rand = function(max) {
 var World = function() {
     this.objects = [];
 
-    this.neighbor = function(direction) {
-        _world = this;
-        return _.reduce(this.objects, function(best, object) {
-            if (object == _world.selected) { return best }
+    this.select = function(object) {
+      this.selected = object;
+      glower.target(object);
+    }
 
-            /* 
-              up:    {x:0,y:1,z:0}
-              right: {x:1,y:0,z:0}
-              down:  {x:0,y:-1,z:0}
-              left:  {x:-1,y:0,z:0}
-            */
-
-            var d = {}
-            _.each(['x','y'], function(axis) {
-              d[axis] = object.position[axis] - _world.selected.position[axis];
-            });
-
-            var aheadness, abreastness;
-
-            axis = (direction.x == 0) ? 'y' : 'x';
-            otherAxis = (axis == 'x') ? 'y' : 'x';
-
-              aheadness = direction[axis] * d[axis];
-              abreastness = Math.abs(d[otherAxis])
-
-
-            if ((aheadness < abreastness) || (aheadness < 0)) {
-              //object.setColorSeed([25,11]);
-              return best;
-            } 
-
-            object.distance = aheadness + abreastness;
-
-            //object.setColorSeed([8,11]);
-
-            if (!best) { return object }
-
-            return (object.distance < best.distance) ? object : best;
-        }, null);
+    this.at = function(position) {
+      return _.find(this.objects, function(object) {
+        return object.position.distTo(position) == 0;
+      });
     }
 }
 
@@ -69,14 +39,12 @@ var addABox = function() {
   box.setColorSeed([rand(20),11]);
   box.position.set(rand(6)-3, rand(6)-3, -8);
 //  box.position.y = 0;
-  if (!_.find(world.objects, function(object) {
-    return box.position == object.position;
-  })) {
+  if (!world.at(box.position)) {
     world.objects.push(box);  
   }
 }
 
-_.times(30, addABox);
+_.times(20, addABox);
 /* inline 
 world.objects[0].position.x = -2
 world.objects[1].position.x = -1
@@ -269,11 +237,13 @@ function webGLStart() {
             key: 's',
             onkeydown: function(e, direction) {
               if (!_.contains(k.directions, e.keyCode)) { return }
+              var newPosition = world.selected.position.clone();
+              newPosition.x += direction.x;
+              newPosition.y += direction.y;
 
-              var neighbor = world.neighbor(direction);
-              if (!neighbor) { return }
-              world.selected = neighbor;
-              glower.target(neighbor);
+              if (newObject = world.at(newPosition)) {
+                world.select(newObject);
+              }
             }
         },
     };
