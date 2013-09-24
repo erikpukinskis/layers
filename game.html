@@ -4,7 +4,7 @@
 <title>Learning WebGL &mdash; lesson 4</title>
 <meta http-equiv="content-type" content="text/html; charset=ISO-8859-1">
 
-<script src="http://www.senchalabs.org/philogl/PhiloGL/build/PhiloGL.js"></script>
+<script src="philogl.js"></script>
 <script src="underscore.js"></script>
 <script src="palette.js"></script>
 <script src="box.js"></script>
@@ -187,7 +187,7 @@ function webGLStart() {
   <ul id="help">
     <li id="color"><span>c</span> Change color</li>
     <li id="move"><span>m</span> Move</li>
-    <li id="select"><span>s</span> Select</li>
+    <li id="select"><span>l</span> Select</li>
   </ul>
 </body>
 
@@ -231,6 +231,7 @@ function webGLStart() {
         c: 67,
         s: 83,
         n: 78,
+        l: 'L'.charCodeAt(0),
     }
 
     k.directions = [k.up, k.right, k.down, k.left];
@@ -266,7 +267,7 @@ function webGLStart() {
         select: {
             help: 'select',
             next: 'move',
-            key: 's',
+            key: 'l',
             onkeydown: function(e, direction) {
               if (!_.contains(k.directions, e.keyCode)) { return }
               var newPosition = world.selected.position.clone();
