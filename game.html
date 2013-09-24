@@ -202,6 +202,7 @@ function webGLStart() {
 
         newMode = _.find(modes, function(attr,name) {
             if(k[attr.key] == e.keyCode) {
+                if (f = attr.onload) { f() }
                 return mode = name;
             }
         })
@@ -243,14 +244,17 @@ function webGLStart() {
             next: 'select',
             key: 'c',
             onkeydown: function(e, direction) {
-              world.ghost = null;
               var seed = world.selected.colorSeed;
               world.selected.setColorSeed ([
                 bounded(seed[0]+direction.x, 0, width),
                 bounded(seed[1]+direction.y, 0, height),
               ]);
+              world.colorSeed = world.selected.colorSeed;
               console.log("seed is " + world.selected.colorSeed[0] + ',' + world.selected.colorSeed[1]);
             },
+            onload: function() {
+              world.ghost = null;              
+            }
         },
         select: {
             help: 'select',
@@ -263,6 +267,7 @@ function webGLStart() {
               newPosition.y += direction.y;
 
               if (newObject = world.at(newPosition)) {
+                setHelp('select');
                 world.select(newObject);
                 world.clearGhost();
               } else if (world.ghost) {
@@ -271,7 +276,7 @@ function webGLStart() {
                 setHelp('Press c to place object');
                 newObject = randomBox();
                 newObject.position = newPosition;
-                newObject.setColorSeed([0,20]);
+                newObject.setColorSeed(world.colorSeed || [0,20]);
                 world.objects.push(newObject);
                 world.ghost = newObject;
                 world.select(newObject);

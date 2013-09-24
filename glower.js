@@ -9,6 +9,7 @@ Glower.prototype.glow = function() {
 }
 
 Glower.prototype.target = function(object) {
+  this.object.setGamma(0);
   this.object = object;
   this.intensity = 0;
 }
