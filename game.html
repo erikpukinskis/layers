@@ -24,16 +24,15 @@ var World = function() {
         _world = this;
         return _.reduce(this.objects, function(best, object) {
             if (object == _world.selected) { return best }
-            if (!best) { return object }
+            position = _world.selected.position;
             var dx = Math.identity(object.position.x - position.x);
             var dy = Math.abs(object.position.y - position.y);
+            object.score = dx + dy;
 
-            if ((dx > 0) && (dx <= dy)) {
-                object.score = dx + dy;
-                return (object.score > best.score) ? object : best;
-            } else {
-                return best;
-            }
+            if ((dx < 0) || (dx <= dy)) { return best }
+            if (!best) { return object }
+
+            return (object.score < best.score) ? object : best;
         }, null);
     }
 }
@@ -45,10 +44,16 @@ var addABox = function() {
   box.colorSeed = [rand(20),11];
   box.applyColorSeed();
   box.position.set(rand(6)-3, rand(6)-3, -8);
+  box.position.y = 0;
   world.objects.push(box);  
 }
 
 _.times(4, addABox);
+/* inline */
+world.objects[0].position.x = -2
+world.objects[1].position.x = -1
+world.objects[2].position.x = 0
+world.objects[3].position.x = 1
 
 world.selected = world.objects[0];
 var glower = new Glower(world.selected);
@@ -171,7 +176,7 @@ function webGLStart() {
 </body>
 
 <script>
-    var mode = 'move';
+    var mode = 'select';
 
     document.onkeydown = function (e) {
         if (e.keyCode == k[modes[mode].key]) {
@@ -232,7 +237,10 @@ function webGLStart() {
             next: 'move',
             key: 's',
             onkeydown: function(e, direction) {
-                world.selected = world.neighbor(direction);
+              var neighbor = world.neighbor(direction);
+              if (!neighbor) { return }
+              world.selected = neighbor;
+              glower.target(neighbor);
             }
         },
     };
