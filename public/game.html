@@ -1,16 +1,19 @@
 <html>
 
 <head>
-<title>Learning WebGL &mdash; lesson 4</title>
+<title>Layers</title>
 <meta http-equiv="content-type" content="text/html; charset=ISO-8859-1">
 
-<script src="philogl.js"></script>
-<script src="underscore.js"></script>
-<script src="palette.js"></script>
-<script src="box.js"></script>
-<script src="glower.js"></script>
-<script src="world.js"></script>
-<script src="glStart.js"></script>
+<script src="/jquery.js"></script>
+<script src="/philogl.js"></script>
+<script src="/underscore.js"></script>
+<script src="/palette.js"></script>
+<script src="/box.js"></script>
+<script src="/glower.js"></script>
+<script src="/world.js"></script>
+<script src="/glStart.js"></script>
+<link rel="stylesheet" href="/style.css" />
+
 <script>
 
 var rand = function(max) {
@@ -35,16 +38,73 @@ var addABox = function() {
   return box;
 }
 
+
+// This shit is for making some random boxes
 //_.times(20, addABox);
-/* inline 
-world.objects[0].position.x = -2
-world.objects[1].position.x = -1
-world.objects[2].position.x = 0
-world.objects[3].position.x = 1*/
 
-addABox();
 
-world.select(world.objects[0]);
+
+$(function() {
+  if (getSlug()) {
+    $('body').addClass('presentation');
+    mode = "show";
+    loadFromSlug();
+  } else {
+    var box = addABox()
+    world.colorSeed = box.colorSeed;
+    world.select(box);
+  }
+});
+
+function getSlug() {
+  return document.location.pathname.split('/')[2];
+}
+
+function loadFromSlug() {
+  $.ajax({
+    type: "GET",
+    url: '/a/' + getSlug(),
+    dataType: 'json',
+    success: function(thing) {
+      console.log('aw yiss!')
+      _.each(thing.objects, function(object) {
+        var box = new Box();
+        box.position.set(object.x, object.y, -8);
+        box.setColorSeed(object.colorSeed);
+        world.objects.push(box)
+      });
+    }
+  })
+}
+
+/* Game stuff */
+
+var addADropper = function() {
+  var box = addABox();
+  box.position.y = 2;
+  world.select(box);
+}
+
+var tickSecond = function() {
+  if (world.selected.position.y > -3) {
+    world.tryMove(world.selected, new PhiloGL.Vec3(0, -1, 0));
+  } else {
+    addADropper();
+  }
+}
+
+/* This shit starts the game 
+
+_.times(9, function(i) {
+  var box = addABox();
+  box.position.set(i-5, -4, -8);
+  box.setColorSeed([5, 17 + i%2]);
+});
+ 
+addADropper();
+setInterval(tickSecond, 1000);
+
+/* up to here */
 
 </script>
 
@@ -76,23 +136,22 @@ world.select(world.objects[0]);
 
 </script>
 
-<link rel="stylesheet" href="style.css" />
-
 </head>
 
 <body onload="webGLStart();" id="body">
-  <div id="message"></div>
-  <canvas id="lesson04-canvas" style="border: none;" width="500" height="500"></canvas>
-  <ul id="help">
-    <li id="color"><span>c</span> Change color</li>
-    <li id="move"><span>m</span> Move</li>
-    <li id="select"><span>l</span> Select</li>
-    <li id="select"><span>s</span> Save</li><br/> 
-    <li>To load, type <code>load('your label')</code> in the javascript console</li>
-  </ul>
-
+  <div id="page">
+    <div id="message"></div>
+    <canvas id="canvas" style="border: none;" width="500" height="500"></canvas>
+    <ul id="help">
+      <li id="color"><span>c</span> Change color</li>
+      <li id="move"><span>m</span> Move</li>
+      <li id="select"><span>d</span> Add/Select</li>
+      <li id="select"><span>s</span> Save</li><br/> 
+      <li>To load, type <code>load('your label')</code> in the javascript console</li>
+    </ul>
+  </div>
 </body>
 
-<script src="ui.js"></script>
+<script src="/ui.js"></script>
 </html>
 

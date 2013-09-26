@@ -1,14 +1,73 @@
+var modes = {
+    move: {
+        help: 'use arrow keys to move',
+        next: 'color',
+        key: 'M',
+        onkeydown: function(e, direction) {
+            world.selected.position.x += direction.x;
+            world.selected.position.y += direction.y;
+            world.selected.position.z += direction.z;        
+        },
+    },
+    color: {
+        help: 'Arrow keys change colors',
+        next: 'select',
+        key: 'C',
+        onkeydown: function(e, direction) {
+          var seed = world.selected.colorSeed;
+          world.selected.setColorSeed ([
+            bounded(seed[0]+direction.x, 0, width),
+            bounded(seed[1]+direction.y, 0, height),
+          ]);
+          world.colorSeed = world.selected.colorSeed;
+        },
+        onload: function() {
+          world.ghost = null;              
+        }
+    },
+    select: {
+        help: 'Arrow keys select or place new object',
+        next: 'move',
+        key: 'D',
+        onkeydown: function(e, direction) {
+          if (!_.contains(k.directions, e.keyCode)) { return }
+          var newPosition = world.selected.position.clone();
+          newPosition.x += direction.x;
+          newPosition.y += direction.y;
+
+          if (newObject = world.at(newPosition)) {
+            world.select(newObject);
+            world.clearGhost();
+          } else if (world.ghost) {
+            world.ghost.position = newPosition;
+          } else {
+            setHelp('Press c to place object');
+            newObject = randomBox();
+            newObject.position = newPosition;
+            newObject.setColorSeed(world.colorSeed || [0,20]);
+            world.objects.push(newObject);
+            world.ghost = newObject;
+            world.select(newObject);
+
+          }
+        }
+    },
+};
+
+
+
 var mode;
 function setMode(name) {
   if (el = document.getElementById(mode)) el.style.border = "3px solid white";
   document.getElementById(name).style.border = "3px solid #ddd"
-  return mode = name;      
+  mode = name
+  setHelp();
 }
 
 setMode('move');
 
 function save(label) {
-  var data = _.map(world.objects, function(object) {
+  var objects = _.map(world.objects, function(object) {
     return {
       x: object.position.x, 
       y: object.position.y,
@@ -16,7 +75,19 @@ function save(label) {
     }
   });
 
-  window.localStorage.setItem(label, JSON.stringify(data));
+  var params = {
+    type: "POST",
+    url: "/things",
+    data: {
+      label: label,
+      objects: objects
+    },
+    success: function(response) {
+      document.location = response.url;
+    },
+    dataType: 'json',
+  }
+  $.ajax(params);
 }
 
 function load(label) {
@@ -32,11 +103,6 @@ function load(label) {
 }
 
 document.onkeydown = function (e) {
-
-    if (e.keyCode == modes[mode].key.charCodeAt(0)) {
-        mode = modes[mode].next;
-        setHelp();
-    }
 
     newMode = _.find(modes, function(attr,name) {
         if(attr.key.charCodeAt(0) == e.keyCode) {
@@ -67,64 +133,6 @@ k = {
 
 k.directions = [k.up, k.right, k.down, k.left];
 
-modes = {
-    move: {
-        help: 'use arrow keys to move',
-        next: 'color',
-        key: 'M',
-        onkeydown: function(e, direction) {
-            world.selected.position.x += direction.x;
-            world.selected.position.y += direction.y;
-            world.selected.position.z += direction.z;        
-        },
-    },
-    color: {
-        help: 'change colors with arrow keys',
-        next: 'select',
-        key: 'C',
-        onkeydown: function(e, direction) {
-          var seed = world.selected.colorSeed;
-          world.selected.setColorSeed ([
-            bounded(seed[0]+direction.x, 0, width),
-            bounded(seed[1]+direction.y, 0, height),
-          ]);
-          world.colorSeed = world.selected.colorSeed;
-          console.log("seed is " + world.selected.colorSeed[0] + ',' + world.selected.colorSeed[1]);
-        },
-        onload: function() {
-          world.ghost = null;              
-        }
-    },
-    select: {
-        help: 'select',
-        next: 'move',
-        key: 'L',
-        onkeydown: function(e, direction) {
-          if (!_.contains(k.directions, e.keyCode)) { return }
-          var newPosition = world.selected.position.clone();
-          newPosition.x += direction.x;
-          newPosition.y += direction.y;
-
-          if (newObject = world.at(newPosition)) {
-            setHelp('select');
-            world.select(newObject);
-            world.clearGhost();
-          } else if (world.ghost) {
-            world.ghost.position = newPosition;
-          } else {
-            setHelp('Press c to place object');
-            newObject = randomBox();
-            newObject.position = newPosition;
-            newObject.setColorSeed(world.colorSeed || [0,20]);
-            world.objects.push(newObject);
-            world.ghost = newObject;
-            world.select(newObject);
-
-          }
-        }
-    },
-};
-
 function arrowKeyDirection(e) {
     var direction = {x:0, y:0, z:0};
     switch(e.keyCode) {
@@ -143,7 +151,8 @@ function bounded(val,min,max) {
 var color = [12,10];
 
 function setHelp(message) {
-    document.getElementById('message').innerHTML = message || modes[mode].help;        
+  message = message || (mode ? modes[mode].help : null)
+  document.getElementById('message').innerHTML = message
 }
 
 setHelp();

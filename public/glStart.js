@@ -1,5 +1,5 @@
 function webGLStart() {
-    PhiloGL('lesson04-canvas', {
+    PhiloGL('canvas', {
       program: {
           from: 'ids',
           vs: 'shader-vs',
@@ -17,7 +17,11 @@ function webGLStart() {
               rCube = 0;
 
           gl.viewport(0, 0, canvas.width, canvas.height);
-          gl.clearColor(0, 0, 0, 1);
+          if (mode == 'show') {
+            gl.clearColor(255,255,255,1);
+          } else {
+            gl.clearColor(0,0,0,1);
+          }
           gl.clearDepth(1);
           gl.enable(gl.DEPTH_TEST);
           gl.depthFunc(gl.LEQUAL);
@@ -58,7 +62,7 @@ function webGLStart() {
                 for(var i=0; i<world.objects.length; i++) {
                     setupElement(world.objects[i]);
 
-                    world.glower.glow();
+                    if (g = world.glower) { g.glow() }
 
                     program.setBuffer('indices', {
                         value: world.objects[i].indices,

@@ -12,6 +12,15 @@ ul#help {
   padding: 0;
 }
 
+.presentation ul#help, .presentation #message {
+  display: none;
+}
+
+.presentation #page {
+  margin: 0 auto;
+  width: 500px;
+}
+
 ul#help li {
   font-family: sans-serif;
   color: #544;

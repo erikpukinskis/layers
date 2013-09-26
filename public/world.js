@@ -17,6 +17,14 @@ World.prototype.at = function(position) {
   });
 }
 
+World.prototype.tryMove = function(object, d) {
+  var newPosition = PhiloGL.Vec3.add(object.position, d);
+  var occupant = this.at(newPosition);
+  if (!occupant || occupant == object) {
+    object.position = newPosition;
+  }
+}
+
 World.prototype.clearGhost = function() {
   if (!world.ghost) { return }
   var i = world.objects.indexOf(world.ghost)
