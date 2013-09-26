@@ -31,7 +31,8 @@ var Thing = mongoose.model('Thing', {
 });
 
 Thing.prototype.url = function() {
-  return  'http://localhost:' + port + '/a/' + this.slug;
+  var host = process.env.PORT ? 'http://many-layers.herokuapp.com' : ('http://localhost:' + port);
+  return host + '/a/' + this.slug;
 }
 
 app.get('/', function (req, res) {
