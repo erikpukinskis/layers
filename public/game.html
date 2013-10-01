@@ -60,10 +60,10 @@ function getSlug() {
   return document.location.pathname.split('/')[2];
 }
 
-function loadFromSlug() {
+function loadFromSlug(slug) {
   $.ajax({
     type: "GET",
-    url: '/a/' + getSlug(),
+    url: '/a/' + (slug || getSlug()),
     dataType: 'json',
     success: function(thing) {
       console.log('aw yiss!')

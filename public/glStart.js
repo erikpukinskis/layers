@@ -1,3 +1,7 @@
+var camera;
+var z=-10;
+
+
 function webGLStart() {
     PhiloGL('canvas', {
       program: {
@@ -12,10 +16,10 @@ function webGLStart() {
           var gl = app.gl,
               canvas = app.canvas,
               program = app.program,
-              camera = app.camera,
               view = new PhiloGL.Mat4,
               rCube = 0;
 
+          camera = app.camera;
           gl.viewport(0, 0, canvas.width, canvas.height);
           if (mode == 'show') {
             gl.clearColor(255,255,255,1);
@@ -25,8 +29,6 @@ function webGLStart() {
           gl.clearDepth(1);
           gl.enable(gl.DEPTH_TEST);
           gl.depthFunc(gl.LEQUAL);
-
-          camera.view.id();
 
           function setupElement(elem) {
               //update element matrix
@@ -58,7 +60,11 @@ function webGLStart() {
             function drawScene() {
                 gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-                //Draw Cube
+                camera.view.id()
+                  .$rotateXYZ(0,0,0)
+                  .$translate(0.1,0,z);
+
+                //Draw World
                 for(var i=0; i<world.objects.length; i++) {
                     setupElement(world.objects[i]);
 
